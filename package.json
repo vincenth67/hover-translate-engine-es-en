@@ -1,0 +1,16 @@
+{
+  "name": "my-chrome-extension",
+  "version": "0.0.0",
+  "description": "Chrome extension template",
+  "main": "src/main.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "devDependencies": {
+    "jest": "^29.0.0",
+    "vince-dev-tools": "github:vincenth67/vince-dev-tools"
+  },
+  "jest": {
+    "testEnvironment": "node"
+  }
+}
