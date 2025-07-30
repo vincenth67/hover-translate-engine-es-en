@@ -1,0 +1,40 @@
+{"id": 1, "spanish": "Me senté en el banco del parque; banco.", "expectedWords": ["bench"], "category": "ambiguous", "difficulty": "challenging"}
+{"id": 2, "spanish": "El banco central subió las tasas de interés; banco.", "expectedWords": ["bank"], "category": "ambiguous", "difficulty": "challenging"}
+{"id": 3, "spanish": "Voy al banco a depositar dinero; banco.", "expectedWords": ["bank"], "category": "ambiguous", "difficulty": "challenging"}
+{"id": 4, "spanish": "Necesito un gato para cambiar la llanta; gato.", "expectedWords": ["jack"], "category": "ambiguous", "difficulty": "challenging"}
+{"id": 5, "spanish": "Mi gato duerme en el sofá; gato.", "expectedWords": ["cat"], "category": "ambiguous", "difficulty": "challenging"}
+{"id": 6, "spanish": "Encendí una vela en la cena; vela.", "expectedWords": ["candle"], "category": "ambiguous", "difficulty": "challenging"}
+{"id": 7, "spanish": "El barco navegó con vela completa; vela.", "expectedWords": ["sail"], "category": "ambiguous", "difficulty": "challenging"}
+{"id": 8, "spanish": "La planta necesita más agua; planta.", "expectedWords": ["plant"], "category": "ambiguous", "difficulty": "challenging"}
+{"id": 9, "spanish": "Vivo en la primera planta del edificio; planta.", "expectedWords": ["floor"], "category": "ambiguous", "difficulty": "challenging"}
+{"id": 10, "spanish": "Bebí vino en una copa elegante; copa.", "expectedWords": ["cup", "glass"], "category": "ambiguous", "difficulty": "challenging"}
+{"id": 11, "spanish": "Los pájaros anidan en la copa del árbol; copa.", "expectedWords": ["crown", "top", "canopy"], "category": "ambiguous", "difficulty": "challenging"}
+{"id": 12, "spanish": "Hay una rata en el sótano; rata.", "expectedWords": ["rat"], "category": "ambiguous", "difficulty": "challenging"}
+{"id": 13, "spanish": "La rata de interés está muy alta; rata.", "expectedWords": ["rate"], "category": "ambiguous", "difficulty": "challenging"}
+{"id": 14, "spanish": "Leí una carta de mi hermana; carta.", "expectedWords": ["letter"], "category": "ambiguous", "difficulty": "challenging"}
+{"id": 15, "spanish": "El camarero me trajo la carta del restaurante; carta.", "expectedWords": ["menu"], "category": "ambiguous", "difficulty": "challenging"}
+{"id": 16, "spanish": "Sin embargo, creo que tienes razón; sin embargo.", "expectedWords": ["however", "nevertheless"], "category": "idioms", "difficulty": "challenging"}
+{"id": 17, "spanish": "A menudo voy al gimnasio los lunes; a menudo.", "expectedWords": ["often", "frequently"], "category": "idioms", "difficulty": "challenging"}
+{"id": 18, "spanish": "De vez en cuando visito a mis abuelos; de vez en cuando.", "expectedWords": ["sometimes", "from time to time", "every now and then", "occasionally"], "category": "idioms", "difficulty": "challenging"}
+{"id": 19, "spanish": "Por favor, ayúdame con esto; por favor.", "expectedWords": ["please"], "category": "idioms", "difficulty": "challenging"}
+{"id": 20, "spanish": "En cuanto llegue, te llamaré; en cuanto.", "expectedWords": ["as soon as", "once", "when"], "category": "idioms", "difficulty": "challenging"}
+{"id": 21, "spanish": "Esa película está muy padre; padre.", "expectedWords": ["cool", "awesome", "great"], "category": "colloquial", "difficulty": "challenging"}
+{"id": 22, "spanish": "¡Qué chévere tu carro nuevo; chévere.", "expectedWords": ["cool", "awesome", "great", "nice"], "category": "colloquial", "difficulty": "challenging"}
+{"id": 23, "spanish": "Vale, nos vemos mañana; vale.", "expectedWords": ["okay", "alright", "fine"], "category": "colloquial", "difficulty": "challenging"}
+{"id": 24, "spanish": "Está súper bueno el concierto; súper.", "expectedWords": ["really", "very", "super"], "category": "colloquial", "difficulty": "challenging"}
+{"id": 25, "spanish": "No manches, ¿en serio pasó eso; manches.", "expectedWords": ["way", "kidding", "serious"], "category": "colloquial", "difficulty": "challenging"}
+{"id": 26, "spanish": "Necesito actualizar el protocolo de seguridad; protocolo.", "expectedWords": ["protocol"], "category": "technical", "difficulty": "challenging"}
+{"id": 27, "spanish": "El ratón de mi computadora no funciona; ratón.", "expectedWords": ["mouse"], "category": "technical", "difficulty": "challenging"}
+{"id": 28, "spanish": "La red de internet está muy lenta; red.", "expectedWords": ["network"], "category": "technical", "difficulty": "challenging"}
+{"id": 29, "spanish": "Guardé el archivo en la nube; nube.", "expectedWords": ["cloud"], "category": "technical", "difficulty": "challenging"}
+{"id": 30, "spanish": "El servidor está caído desde ayer; servidor.", "expectedWords": ["server"], "category": "technical", "difficulty": "challenging"}
+{"id": 31, "spanish": "La casa es muy grande; casa.", "expectedWords": ["house"], "category": "generic", "difficulty": "easy"}
+{"id": 32, "spanish": "Mi hermana estudia medicina; hermana.", "expectedWords": ["sister"], "category": "generic", "difficulty": "easy"}
+{"id": 33, "spanish": "El perro corre en el jardín; perro.", "expectedWords": ["dog"], "category": "generic", "difficulty": "easy"}
+{"id": 34, "spanish": "Necesito comprar leche en el supermercado; leche.", "expectedWords": ["milk"], "category": "generic", "difficulty": "easy"}
+{"id": 35, "spanish": "Los niños están jugando afuera; jugando.", "expectedWords": ["playing"], "category": "generic", "difficulty": "easy"}
+{"id": 36, "spanish": "Estoy corriendo en el parque; corriendo.", "expectedWords": ["running"], "category": "generic", "difficulty": "easy"}
+{"id": 37, "spanish": "He comido demasiado hoy; comido.", "expectedWords": ["eaten"], "category": "generic", "difficulty": "easy"}
+{"id": 38, "spanish": "El cielo está muy azul; azul.", "expectedWords": ["blue"], "category": "generic", "difficulty": "easy"}
+{"id": 39, "spanish": "Mañana es viernes; viernes.", "expectedWords": ["Friday"], "category": "generic", "difficulty": "easy"}
+{"id": 40, "spanish": "Me gusta la música clásica; música.", "expectedWords": ["music"], "category": "generic", "difficulty": "easy"}
