@@ -2,6 +2,8 @@
 
 A standalone Spanish-to-English translation engine using the Helsinki model with an innovative semicolon technique for context-aware translation. Designed for Chrome extensions and web applications requiring fast, accurate translations.
 
+**Version 0.2.0**: Now includes webpack bundling for Chrome extension integration with zero external dependencies.
+
 ## Features
 
 - **Context-Aware Translation**: Resolves ambiguous words using sentence context (e.g., "banco" = bank vs bench)
@@ -9,6 +11,7 @@ A standalone Spanish-to-English translation engine using the Helsinki model with
 - **Memory Efficient**: Stable memory usage with Helsinki model (<100MB working memory)
 - **Storm-Safe Loading**: Graceful failure handling with safe loading mechanisms
 - **Standalone Package**: Independent NPM package installable from GitHub
+- **Webpack Bundling**: Self-contained bundle for Chrome extensions (v0.2.0+)
 
 ## Installation
 
@@ -24,6 +27,7 @@ npm install hover-translate-engine-es-en
 
 ## Quick Start
 
+### Source Version (Development)
 ```javascript
 import { translate, loadEngine, getEngineState, TranslationStatus } from 'hover-translate-engine-es-en';
 
@@ -37,6 +41,80 @@ if (result.status === TranslationStatus.SUCCESS) {
   console.log(result.fullSentence); // "The central bank raised interest rates."
 }
 ```
+
+### Bundled Version (Chrome Extensions)
+```javascript
+// Load the bundled version (no imports needed)
+// Functions available globally: loadEngine, translate, getEngineState, TranslationStatus
+
+// Initialize engine
+await loadEngine();
+
+// Translate with context
+const result = await translate("banco", "El banco central subió las tasas.");
+if (result.status === TranslationStatus.SUCCESS) {
+  console.log(result.targetWord); // "bank"
+}
+```
+
+## Chrome Extension Integration
+
+### Manifest.json Setup
+```json
+{
+  "manifest_version": 3,
+  "name": "Hover Translate - Spanish",
+  "content_scripts": [{
+    "matches": ["<all_urls>"],
+    "js": [
+      "node_modules/hover-translate-engine-es-en/dist/hover-translate-engine.js",
+      "src/main.js"
+    ]
+  }]
+}
+```
+
+### Usage in Content Script
+```javascript
+// src/main.js - No imports needed, bundle loads globally
+
+async function initializeTranslation() {
+  // Pre-load the engine
+  await loadEngine();
+  console.log('Engine ready:', getEngineState());
+}
+
+async function handleHover(targetWord, sentence) {
+  const result = await translate(targetWord, sentence);
+  
+  if (result.status === TranslationStatus.SUCCESS) {
+    showTooltip(result.targetWord);
+  }
+}
+```
+
+## Build System
+
+### Development Commands
+```bash
+# Build the webpack bundle
+npm run build
+
+# Build in development mode (larger, unminified)
+npm run build:dev
+
+# Test the bundled version
+npm run test:bundle
+
+# Run all tests including bundle tests
+npm run test:all
+```
+
+### Bundle Information
+- **Bundle Size**: ~55MB (includes Helsinki model + Transformers.js + engine code)
+- **Format**: UMD (Universal Module Definition) - works in browsers, CommonJS, and ES modules
+- **Dependencies**: Zero external dependencies at runtime
+- **Offline Capable**: Works completely offline after installation
 
 ## API Reference
 
@@ -142,6 +220,11 @@ npm test
 npm run test:perf
 ```
 
+### Bundle Tests
+```bash
+npm run test:bundle
+```
+
 ### All Tests
 ```bash
 npm run test:all
@@ -215,6 +298,12 @@ node scripts/test_translation_performance.js
 npm test -- tests/performance/performance.test.js
 ```
 
+#### Bundle Tests
+```bash
+# Test the webpack bundle functionality
+npm run test:bundle
+```
+
 ### Test Coverage
 - **Current Coverage**: 87.75% (Statements: 87.75%, Branches: 55.55%, Functions: 71.42%, Lines: 87.75%)
 - **Coverage Threshold**: 45% (configured in package.json)
@@ -224,17 +313,24 @@ npm test -- tests/performance/performance.test.js
 ```
 hover-translate-engine-es-en/
 ├── package.json                    # NPM package configuration
+├── webpack.config.js              # Webpack build configuration
 ├── README.md                       # Usage documentation
 ├── src/
 │   └── engine.js                   # Main engine implementation
+├── dist/                           # Webpack output (bundled version)
+│   └── hover-translate-engine.js   # Self-contained bundle (~55MB)
 ├── tests/
 │   ├── engine.test.js              # Unit tests (Jest)
+│   ├── webpack.test.js             # Bundle integration tests
 │   ├── performance/
 │   │   └── performance.test.js     # String manipulation performance tests
 │   └── fixtures/
 │       └── test-sentences.jsonl    # Test dataset (40 sentences)
 ├── scripts/
-│   └── test_translation_performance.js  # Main performance test (vanilla JS)
+│   ├── test_translation_performance.js  # Main performance test (vanilla JS)
+│   ├── test-bundle.cjs             # Bundle functionality test
+│   ├── clean-dist.js               # Clean dist directory
+│   └── check-bundle.js             # Bundle validation
 └── tests/
     ├── engine.test.js              # Unit tests (Jest)
     ├── performance/
@@ -261,6 +357,7 @@ MIT License - see LICENSE file for details.
 
 - **@huggingface/transformers**: ^3.7.0 - Transformers.js for model loading and execution
 - **Model**: Xenova/opus-mt-es-en - Spanish to English translation model (JavaScript optimized)
+- **Webpack Dependencies** (dev): webpack, webpack-cli, babel-loader, @babel/core, @babel/preset-env
 
 ## Current Status
 
@@ -271,11 +368,14 @@ MIT License - see LICENSE file for details.
 - ✅ Context-aware translation with semicolon technique
 - ✅ Proper error handling and edge case support
 - ✅ Performance testing with 80% accuracy on 40 test sentences
+- ✅ Webpack bundling for Chrome extension integration (v0.2.0)
+- ✅ Zero external dependencies at runtime
 
 ## Performance Notes
 
 - **Translation Speed**: ~234ms average per translation (4.27 translations/second)
 - **Memory Usage**: +47MB after model loading (stable)
+- **Bundle Size**: ~55MB (includes complete Helsinki model)
 - **Accuracy**: 80% overall on complex test cases
   - Generic/Technical: 100% accuracy
   - Idioms: 100% accuracy  

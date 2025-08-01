@@ -1,6 +1,6 @@
 import { pipeline } from '@huggingface/transformers';
 
-// Private Engine States (Internal use only)
+// Private Engine States  (Internal use only)
 const _EngineState = {
   NOT_INITIALIZED: 'translate engine not initialized',
   INITIALIZING: 'translate engine initializing',
