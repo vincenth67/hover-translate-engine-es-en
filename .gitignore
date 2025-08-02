@@ -5,7 +5,7 @@ yarn-debug.log*
 yarn-error.log*
 
 # Build outputs
-dist/
+# dist/    <-- we need to produce the dist/ webpack!
 build/
 *.bundle.js
 *.bundle.js.map
