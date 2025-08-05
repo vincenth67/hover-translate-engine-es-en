@@ -21,7 +21,7 @@
     "test:bundle": "node tests/webpack-bundle.cjs",
     "test:translation": "node scripts/test-bundle.cjs",
     "prebuild": "node scripts/clean-dist.js",
-    "postbuild": "node scripts/check-bundle.js"
+    "postbuild": "node scripts/cleanup-dist.js && node scripts/check-bundle.js"
   },
   "jest": {
     "collectCoverage": true,

@@ -15,7 +15,7 @@ export default {
     libraryTarget: 'umd',
     globalObject: 'this',
     umdNamedDefine: true,
-    publicPath: './' // Use relative path for better compatibility
+    publicPath: '' // No public path needed for single file bundle
   },
   resolve: {
     extensions: ['.js'],
@@ -38,10 +38,15 @@ export default {
             presets: ['@babel/preset-env']
           }
         }
+      },
+      {
+        test: /\.wasm$/,
+        type: 'asset/inline'
       }
     ]
   },
   optimization: {
-    minimize: true
+    minimize: true,
+    splitChunks: false,
   }
-}; 
+};
