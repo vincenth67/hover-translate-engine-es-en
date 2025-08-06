@@ -40,7 +40,7 @@ export async function loadEngine() {
     return _engineState;
   } catch (error) {
     _engineState = EngineState.INITIALIZATION_FAILED;
-    console.debug('Xenova model failed to load:', error.message);
+    console.error('Xenova model failed to load:', error);
     return _engineState;
   }
 }
