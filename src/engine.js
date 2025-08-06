@@ -2,16 +2,18 @@ import { pipeline } from '@huggingface/transformers';
 
 
 
-// Private Engine States  (Internal use only)
-const _EngineState = {
+// Public Engine States (API type)
+export const EngineState = {
   NOT_INITIALIZED: 'translate engine not initialized',
   INITIALIZING: 'translate engine initializing',
   READY: 'translate engine ready',
   INITIALIZATION_FAILED: 'translate engine initialization failed'
 };
 
+let _engineState = EngineState.NOT_INITIALIZED;
+
 // Module-scoped state (private)
-let _engineState = _EngineState.NOT_INITIALIZED;
+
 let translator = null;
 
 // Public Translation Status (External API)
@@ -23,7 +25,7 @@ export const TranslationStatus = {
 
 /**
  * Loads the Helsinki translation model
- * @returns {Promise<string>} Engine state after loading attempt
+ * @returns {Promise<string>} Engine state after loading attempt. One of EngineState values.
  */
 export async function loadEngine() {
   try {
@@ -32,10 +34,10 @@ export async function loadEngine() {
       translator = await pipeline('translation', 'Xenova/opus-mt-es-en');
       console.debug('Xenova model loaded successfully');
     }
-    _engineState = _EngineState.READY;
+    _engineState = EngineState.READY;
     return _engineState;
   } catch (error) {
-    _engineState = _EngineState.INITIALIZATION_FAILED;
+    _engineState = EngineState.INITIALIZATION_FAILED;
     console.debug('Xenova model failed to load:', error.message);
     return _engineState;
   }
@@ -61,7 +63,7 @@ export async function translate(targetWord, sentence) {
     // Load model if not already loaded
     if (!translator) {
       await loadEngine();
-      if (_engineState !== _EngineState.READY) {
+      if (_engineState !== EngineState.READY) {
         return {
           targetWord: '',
           fullSentence: '',
@@ -100,7 +102,7 @@ export async function translate(targetWord, sentence) {
 
 /**
  * Gets current engine state
- * @returns {string} Current engine state
+ * @returns {string} Current engine state. One of EngineState values.
  */
 export function getEngineState() {
   return _engineState;
@@ -111,7 +113,7 @@ export function getEngineState() {
  * @private
  */
 export function _resetEngine() {
-  _engineState = _EngineState.NOT_INITIALIZED;
+  _engineState = EngineState.NOT_INITIALIZED;
   translator = null;
 }
 
