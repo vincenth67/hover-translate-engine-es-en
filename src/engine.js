@@ -30,8 +30,10 @@ export const TranslationStatus = {
 export async function loadEngine() {
   try {
     if (!translator) {
+      // Explicitly set dtype: 'fp32' to suppress warnings about default dtype.
+      // fp32 is the default for CPU, but setting it explicitly avoids warnings from the model loader.
       console.debug('Loading Xenova/opus-mt-es-en model...');
-      translator = await pipeline('translation', 'Xenova/opus-mt-es-en');
+      translator = await pipeline('translation', 'Xenova/opus-mt-es-en', { dtype: 'fp32' });
       console.debug('Xenova model loaded successfully');
     }
     _engineState = EngineState.READY;
