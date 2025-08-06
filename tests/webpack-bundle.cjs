@@ -17,8 +17,9 @@ const stats = fs.statSync(bundlePath);
 const sizeInMB = stats.size / (1024 * 1024);
 console.log(`📦 Bundle size: ${sizeInMB.toFixed(2)}MB`);
 
-if (sizeInMB < 0.5 || sizeInMB > 2) {
-  console.error('❌ Bundle size is outside expected range (0.5-2MB)');
+// Updated size check for inlined WASM/MJS
+if (sizeInMB < 0.5 || sizeInMB > 40) {
+  console.error('❌ Bundle size is outside expected range (0.5-40MB)');
   process.exit(1);
 }
 
@@ -59,7 +60,7 @@ try {
 
 console.log('✅ Bundle structure validation passed!');
 console.log('✅ Bundle contains all required functions and model references');
-console.log('✅ Bundle size is within expected range');
+console.log('✅ Bundle size is within expected range (0.5-40MB)');
 console.log('ℹ️  Full functional testing requires browser environment (Chrome extension)');
 console.log('✅ Bundle is ready for Chrome extension integration!');
 
