@@ -55,4 +55,14 @@ const mockTranslator = jest.fn().mockImplementation((input) => {
   }]);
 });
 
-export const pipeline = jest.fn().mockResolvedValue(mockTranslator); 
+export const pipeline = jest.fn().mockResolvedValue(mockTranslator);
+
+export const env = {
+  backends: {
+    onnx: {
+      wasm: {
+        wasmPaths: ''
+      }
+    }
+  }
+}; 
