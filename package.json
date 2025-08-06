@@ -54,7 +54,8 @@
     "maxWorkers": 1
   },
   "dependencies": {
-    "@huggingface/transformers": "^3.7.0"
+    "@huggingface/transformers": "^3.7.0",
+    "task-master-ai": "^0.23.0"
   },
   "devDependencies": {
     "@babel/core": "^7.28.0",
