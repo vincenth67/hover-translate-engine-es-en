@@ -1,6 +1,6 @@
 {
   "name": "hover-translate-engine-es-en",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "Spanish to English translation engine using Helsinki model with context-aware semicolon technique",
   "main": "dist/hover-translate-engine.js",
   "module": "src/engine.js",
