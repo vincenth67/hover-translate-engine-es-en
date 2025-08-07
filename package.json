@@ -17,11 +17,7 @@
     "test:watch": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --watch",
     "test:perf": "node ./scripts/test_translation_performance.js",
     "build": "webpack --mode=production",
-    "build:dev": "webpack --mode=development",
-    "test:bundle": "node tests/webpack-bundle.cjs",
-    "test:translation": "node scripts/test-bundle.cjs",
-    "prebuild": "node scripts/clean-dist.js",
-    "postbuild": "node scripts/cleanup-dist.js && node scripts/check-bundle.js && node scripts/remove-cdn-reference.js"
+    "test:bundle": "node integration-tests/webpack-bundle.cjs"
   },
   "jest": {
     "collectCoverage": true,
@@ -61,7 +57,7 @@
     "@babel/core": "^7.28.0",
     "@babel/preset-env": "^7.28.0",
     "babel-loader": "^9.2.1",
-    "copy-webpack-plugin": "^13.0.0",
+
     "jest": "^29.0.0",
     "vince-dev-tools": "github:vincenth67/vince-dev-tools",
     "webpack": "^5.101.0",
