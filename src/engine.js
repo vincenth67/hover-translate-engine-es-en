@@ -25,15 +25,21 @@ export const TranslationStatus = {
 
 /**
  * Loads the Helsinki translation model
+ * @param {Object|null} wasmPaths - Optional. If provided, should be an object mapping WASM/MJS filenames to URLs/paths.
  * @returns {Promise<string>} Engine state after loading attempt. One of EngineState values.
  */
-export async function loadEngine() {
+export async function loadEngine(wasmPaths = null) {
   try {
     if (!translator) {
-      // Explicitly set dtype: 'fp32' to suppress warnings about default dtype.
-      // fp32 is the default for CPU, but setting it explicitly avoids warnings from the model loader.
+      let pipelineOptions = { dtype: 'fp32' };
+      if (wasmPaths) {
+        pipelineOptions.wasmPaths = wasmPaths;
+        console.debug('[Engine] Using custom WASM/MJS paths:', wasmPaths);
+      } else {
+        console.debug('[Engine] Using default WASM/MJS loading (CDN or environment default)');
+      }
       console.debug('Loading Xenova/opus-mt-es-en model...');
-      translator = await pipeline('translation', 'Xenova/opus-mt-es-en', { dtype: 'fp32' });
+      translator = await pipeline('translation', 'Xenova/opus-mt-es-en', pipelineOptions);
       console.debug('Xenova model loaded successfully');
     }
     _engineState = EngineState.READY;
