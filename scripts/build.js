@@ -153,8 +153,23 @@ async function buildWithLogging() {
     log.success(`WASM file created: ${tempWasm1} (${tempWasm1Info.sizeFormatted})`);
     log.success(`WASM file created: ${tempWasm2} (${tempWasm2Info.sizeFormatted})`);
     
-    // Step 5: Atomic replacement
-    log.step('Step 5: Atomic replacement - moving temp to final location');
+    // Step 5: Copy README to temp directory
+    log.step('Step 5: Adding package documentation');
+    
+    // Copy root README.md to temp directory
+    const rootReadme = './README.md';
+    const distReadme = `${tempDir}/README.md`;
+    
+    if (fs.existsSync(rootReadme)) {
+      fs.copyFileSync(rootReadme, distReadme);
+      const readmeInfo = getFileInfo(distReadme);
+      log.success(`README.md copied to package (${readmeInfo.sizeFormatted})`);
+    } else {
+      log.warning('README.md not found in root directory');
+    }
+    
+    // Step 6: Atomic replacement
+    log.step('Step 6: Atomic replacement - moving temp to final location');
     
     // Move temp directory to final location
     fs.renameSync(tempDir, finalDir);
@@ -166,8 +181,8 @@ async function buildWithLogging() {
       log.info('Backup directory cleaned up');
     }
     
-    // Step 6: Build summary
-    log.step('Step 6: Build summary');
+    // Step 7: Build summary
+    log.step('Step 7: Build summary');
     
     // Re-read file info from final location
     const finalMainBundle = './dist/hover-translate-engine.js';
@@ -185,6 +200,7 @@ async function buildWithLogging() {
     log.info('Package structure:');
     log.info('  dist/');
     log.info(`  ├── hover-translate-engine.js (${finalMainBundleInfo.sizeFormatted})`);
+    log.info(`  ├── README.md (${getFileInfo('./dist/README.md').sizeFormatted})`);
     log.info('  └── wasm/');
     log.info(`      ├── ort-wasm-simd-threaded.jsep.wasm (${finalWasm1Info.sizeFormatted})`);
     log.info(`      └── ort-wasm-simd-threaded.jsep.mjs (${finalWasm2Info.sizeFormatted})`);
