@@ -2,7 +2,7 @@
 
 A standalone Spanish-to-English translation engine using the Helsinki model with an innovative semicolon technique for context-aware translation. Designed for Chrome extensions and web applications requiring fast, accurate translations.
 
-**Version 0.2.0**: Now includes webpack bundling for Chrome extension integration with zero external dependencies.
+**Version 0.2.4**: Now includes webpack bundling for Chrome extension integration with zero external dependencies and WASM files included in package.
 
 ## Features
 
@@ -47,8 +47,12 @@ if (result.status === TranslationStatus.SUCCESS) {
 // Load the bundled version (no imports needed)
 // Functions available globally: loadEngine, translate, getEngineState, TranslationStatus
 
-// Initialize engine
-await loadEngine();
+// Use local WASM files (required for Chrome extensions)
+const wasmPaths = {
+  'ort-wasm-simd-threaded.jsep.wasm': chrome.runtime.getURL('node_modules/hover-translate-engine-es-en/dist/wasm/ort-wasm-simd-threaded.jsep.wasm'),
+  'ort-wasm-simd-threaded.jsep.mjs': chrome.runtime.getURL('node_modules/hover-translate-engine-es-en/dist/wasm/ort-wasm-simd-threaded.jsep.mjs')
+};
+await loadEngine(wasmPaths);
 
 // Translate with context
 const result = await translate("banco", "El banco central subió las tasas.");
@@ -58,6 +62,11 @@ if (result.status === TranslationStatus.SUCCESS) {
 ```
 
 ## Chrome Extension Integration
+
+### Package Installation
+```bash
+npm install hover-translate-engine-es-en
+```
 
 ### Manifest.json Setup
 ```json
@@ -70,6 +79,12 @@ if (result.status === TranslationStatus.SUCCESS) {
       "node_modules/hover-translate-engine-es-en/dist/hover-translate-engine.js",
       "src/main.js"
     ]
+  }],
+  "web_accessible_resources": [{
+    "resources": [
+      "node_modules/hover-translate-engine-es-en/dist/wasm/*"
+    ],
+    "matches": ["<all_urls>"]
   }]
 }
 ```
@@ -79,8 +94,13 @@ if (result.status === TranslationStatus.SUCCESS) {
 // src/main.js - No imports needed, bundle loads globally
 
 async function initializeTranslation() {
-  // Pre-load the engine
-  await loadEngine();
+  // Use local WASM files (required for Chrome extensions)
+  const wasmPaths = {
+    'ort-wasm-simd-threaded.jsep.wasm': chrome.runtime.getURL('node_modules/hover-translate-engine-es-en/dist/wasm/ort-wasm-simd-threaded.jsep.wasm'),
+    'ort-wasm-simd-threaded.jsep.mjs': chrome.runtime.getURL('node_modules/hover-translate-engine-es-en/dist/wasm/ort-wasm-simd-threaded.jsep.mjs')
+  };
+  await loadEngine(wasmPaths);
+  
   console.log('Engine ready:', getEngineState());
 }
 
@@ -91,7 +111,209 @@ async function handleHover(targetWord, sentence) {
     showTooltip(result.targetWord);
   }
 }
+
+// Initialize when content script loads
+initializeTranslation();
 ```
+
+## Advanced Chrome Extension Architecture (Recommended)
+
+For production Chrome extensions, it's recommended to use a background script with an offscreen document to handle the translation engine. This approach provides better performance and follows Chrome extension best practices.
+
+### Architecture Overview
+
+```
+Content Script → Background Script → Offscreen Document → Translation Engine
+```
+
+### Manifest.json Setup
+```json
+{
+  "manifest_version": 3,
+  "name": "Hover Translate - Spanish",
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [{
+    "matches": ["<all_urls>"],
+    "js": ["content.js"]
+  }],
+  "web_accessible_resources": [{
+    "resources": [
+      "node_modules/hover-translate-engine-es-en/dist/wasm/*"
+    ],
+    "matches": ["<all_urls>"]
+  }],
+  "permissions": ["offscreen"]
+}
+```
+
+### Background Script (background.js)
+```javascript
+// Background script - handles communication and manages offscreen document
+
+let offscreenCreated = false;
+
+// Create offscreen document for translation engine
+async function createOffscreen() {
+  if (offscreenCreated) return;
+  
+  await chrome.offscreen.createDocument({
+    url: 'offscreen.html',
+    reasons: ['WORKERS'],
+    justification: 'Load translation engine for Spanish-English translation'
+  });
+  offscreenCreated = true;
+}
+
+// Handle messages from content scripts
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.type === 'TRANSLATE') {
+    handleTranslation(message.data)
+      .then(sendResponse)
+      .catch(error => sendResponse({ error: error.message }));
+    return true; // Keep message channel open for async response
+  }
+});
+
+async function handleTranslation({ targetWord, sentence }) {
+  // Ensure offscreen document exists
+  await createOffscreen();
+  
+  // Send translation request to offscreen document
+  const response = await chrome.runtime.sendMessage({
+    type: 'TRANSLATE_REQUEST',
+    targetWord,
+    sentence
+  });
+  
+  return response;
+}
+```
+
+### Offscreen Document (offscreen.html)
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Translation Engine Offscreen</title>
+</head>
+<body>
+  <script src="node_modules/hover-translate-engine-es-en/dist/hover-translate-engine.js"></script>
+  <script src="offscreen.js"></script>
+</body>
+</html>
+```
+
+### Offscreen Script (offscreen.js)
+```javascript
+// Offscreen document - loads and manages the translation engine
+
+let engineReady = false;
+
+// Initialize the translation engine
+async function initializeEngine() {
+  if (engineReady) return;
+  
+  try {
+    // Use local WASM files
+    const wasmPaths = {
+      'ort-wasm-simd-threaded.jsep.wasm': chrome.runtime.getURL('node_modules/hover-translate-engine-es-en/dist/wasm/ort-wasm-simd-threaded.jsep.wasm'),
+      'ort-wasm-simd-threaded.jsep.mjs': chrome.runtime.getURL('node_modules/hover-translate-engine-es-en/dist/wasm/ort-wasm-simd-threaded.jsep.mjs')
+    };
+    
+    await loadEngine(wasmPaths);
+    engineReady = true;
+    console.log('Translation engine ready in offscreen document');
+  } catch (error) {
+    console.error('Failed to initialize translation engine:', error);
+    throw error;
+  }
+}
+
+// Handle messages from background script
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.type === 'TRANSLATE_REQUEST') {
+    handleTranslateRequest(message)
+      .then(sendResponse)
+      .catch(error => sendResponse({ error: error.message }));
+    return true; // Keep message channel open
+  }
+});
+
+async function handleTranslateRequest({ targetWord, sentence }) {
+  // Ensure engine is ready
+  if (!engineReady) {
+    await initializeEngine();
+  }
+  
+  // Perform translation
+  const result = await translate(targetWord, sentence);
+  return result;
+}
+
+// Initialize engine when offscreen document loads
+initializeEngine().catch(console.error);
+```
+
+### Content Script (content.js)
+```javascript
+// Content script - handles page interaction and requests translation
+
+async function handleHover(targetWord, sentence) {
+  try {
+    // Send translation request to background script
+    const response = await chrome.runtime.sendMessage({
+      type: 'TRANSLATE',
+      data: { targetWord, sentence }
+    });
+    
+    if (response.error) {
+      console.error('Translation error:', response.error);
+      return;
+    }
+    
+    if (response.status === TranslationStatus.SUCCESS) {
+      showTooltip(response.targetWord);
+    }
+  } catch (error) {
+    console.error('Failed to translate:', error);
+  }
+}
+
+function showTooltip(translation) {
+  // Your tooltip implementation
+  console.log('Translation:', translation);
+}
+
+// Example: Add hover listeners to Spanish text
+document.addEventListener('mouseover', (event) => {
+  const element = event.target;
+  const text = element.textContent;
+  
+  // Simple Spanish word detection (improve as needed)
+  if (isSpanishText(text)) {
+    const words = text.split(/\s+/);
+    const targetWord = words[0]; // Simplified - get word under cursor
+    handleHover(targetWord, text);
+  }
+});
+
+function isSpanishText(text) {
+  // Simple Spanish detection logic
+  const spanishWords = ['el', 'la', 'es', 'en', 'de', 'y', 'que', 'un', 'una'];
+  return spanishWords.some(word => text.toLowerCase().includes(word));
+}
+```
+
+### Benefits of This Architecture
+
+- ✅ **Better Performance**: Heavy ML processing in offscreen document
+- ✅ **Service Worker Compatibility**: Background script stays lightweight
+- ✅ **Memory Management**: Offscreen document can be closed when not needed
+- ✅ **Error Isolation**: Translation errors don't crash the background script
+- ✅ **Chrome Extension Best Practices**: Follows recommended patterns
+
 
 ## Build System
 
@@ -118,15 +340,27 @@ npm run test:all
 
 ## API Reference
 
-### `loadEngine()`
+### `loadEngine(wasmPaths?)`
 
-Initializes the Helsinki translation model.
+Initializes the Helsinki translation model with optional WASM file paths.
+
+**Parameters**:
+- `wasmPaths` (optional): Object mapping WASM filenames to local paths for offline usage
 
 **Returns**: `Promise<string>` - Engine state after loading attempt
 
-**Example**:
+**Examples**:
 ```javascript
+// Web applications: Use default CDN loading
 const state = await loadEngine();
+console.log(state); // "translate engine ready"
+
+// Chrome extensions: Use local WASM files (CDN blocked by CSP)
+const wasmPaths = {
+  'ort-wasm-simd-threaded.jsep.wasm': chrome.runtime.getURL('node_modules/hover-translate-engine-es-en/dist/wasm/ort-wasm-simd-threaded.jsep.wasm'),
+  'ort-wasm-simd-threaded.jsep.mjs': chrome.runtime.getURL('node_modules/hover-translate-engine-es-en/dist/wasm/ort-wasm-simd-threaded.jsep.mjs')
+};
+const state = await loadEngine(wasmPaths);
 console.log(state); // "translate engine ready"
 ```
 

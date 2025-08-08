@@ -71,6 +71,24 @@ pids
 # webpack build outputs
 webpack-stats.json 
 
+logs
+dev-debug.log
+# Dependency directories
+# Editor directories and files
+.idea
+.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+# OS specific
 
-# taskmaster
-.taskmaster
+# Task files
+tasks.json
+tasks/
+
+# WASM files (large binaries, should be built/downloaded)
+public/wasm/
+*.wasm
+*.mjs 

@@ -1,27 +1,30 @@
 {
   "name": "hover-translate-engine-es-en",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "Spanish to English translation engine using Helsinki model with context-aware semicolon technique",
   "main": "dist/hover-translate-engine.js",
   "module": "src/engine.js",
   "type": "module",
+  "files": [
+    "dist/",
+    "src/",
+    "README.md",
+    "package.json"
+  ],
   "exports": {
     ".": {
       "import": "./dist/hover-translate-engine.js",
       "require": "./dist/hover-translate-engine.js"
-    }
+    },
+    "./wasm/*": "./dist/wasm/*"
   },
   "scripts": {
     "test": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js",
     "test:coverage": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --coverage",
     "test:watch": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --watch",
     "test:perf": "node ./scripts/test_translation_performance.js",
-    "build": "webpack --mode=production",
-    "build:dev": "webpack --mode=development",
-    "test:bundle": "node tests/webpack-bundle.cjs",
-    "test:translation": "node scripts/test-bundle.cjs",
-    "prebuild": "node scripts/clean-dist.js",
-    "postbuild": "node scripts/cleanup-dist.js && node scripts/check-bundle.js && node scripts/remove-cdn-reference.js"
+    "build": "node scripts/build.js",
+    "test:bundle": "node integration-tests/webpack-bundle.cjs"
   },
   "jest": {
     "collectCoverage": true,
@@ -54,7 +57,8 @@
     "maxWorkers": 1
   },
   "dependencies": {
-    "@huggingface/transformers": "^3.7.0"
+    "@huggingface/transformers": "^3.7.0",
+    "task-master-ai": "^0.23.0"
   },
   "devDependencies": {
     "@babel/core": "^7.28.0",
