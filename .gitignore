@@ -84,11 +84,7 @@ dev-debug.log
 *.sw?
 # OS specific
 
-# Task files
+# Taskmaster files
+.taskmaster/*
 tasks.json
-tasks/
-
-# WASM files (large binaries, should be built/downloaded)
-public/wasm/
-*.wasm
-*.mjs 
+tasks/ 
