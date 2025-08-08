@@ -86,4 +86,9 @@ dev-debug.log
 
 # Task files
 tasks.json
-tasks/ 
+tasks/
+
+# WASM files (large binaries, should be built/downloaded)
+public/wasm/
+*.wasm
+*.mjs 
