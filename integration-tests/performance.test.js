@@ -4,6 +4,8 @@
 
 import { loadEngineLocal, translate, _resetEngine } from '../src/engine.js';
 import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 // Memory tracking utilities
 function getMemoryUsage() {
@@ -38,7 +40,11 @@ async function testTranslationEngine() {
     
     // Load test data from the correct location
     console.log('📂 Loading test data...');
-    const testData = fs.readFileSync('fixtures/test-sentences.jsonl', 'utf8')
+    // Resolve JSONL path relative to this test file directory so it works regardless of CWD
+    const __filename = fileURLToPath(import.meta.url);
+    const __dirname = path.dirname(__filename);
+    const jsonlPath = path.join(__dirname, 'fixtures', 'test-sentences.jsonl');
+    const testData = fs.readFileSync(jsonlPath, 'utf8')
         .split('\n')
         .filter(line => line.trim())
         .map(line => JSON.parse(line));
