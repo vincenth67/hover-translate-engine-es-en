@@ -364,6 +364,35 @@ const state = await loadEngine(wasmPaths);
 console.log(state); // "translate engine ready"
 ```
 
+### `loadEngineLocal()`
+
+Loads the Helsinki translation model using local bundled assets (offline mode).
+
+**Returns**: `Promise<string>` - Engine state after loading attempt
+
+**When to use `loadEngine()` vs `loadEngineLocal()`**:
+
+- **Use `loadEngine()`** when:
+  - Building web applications that can access the internet
+  - You want the latest model version from Hugging Face CDN
+  - You don't have local model files bundled
+  - Development/testing environments with internet access
+
+- **Use `loadEngineLocal()`** when:
+  - Building Chrome extensions (CSP blocks CDN access)
+  - Creating offline-capable applications
+  - You have local model files in `./dist/models/Xenova/opus-mt-es-en/`
+  - Production deployments where you want to avoid network dependencies
+
+**Example**:
+```javascript
+// For offline/extension usage
+import { loadEngineLocal } from 'hover-translate-engine-es-en';
+
+const state = await loadEngineLocal();
+console.log(state); // "translate engine ready"
+```
+
 ### `translate(targetWord, sentence)`
 
 Translates Spanish text to English using context-aware semicolon technique.
