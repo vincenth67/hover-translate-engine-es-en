@@ -1,4 +1,8 @@
-import { loadEngine, translate } from '../src/engine.js';
+// Translation performance integration test using local files
+// This test validates the engine's accuracy and performance across 40 predefined test sentences
+// Uses local model files instead of CDN for consistent offline testing
+
+import { loadEngineLocal, translate, _resetEngine } from '../src/engine.js';
 import fs from 'fs';
 
 // Memory tracking utilities
@@ -23,25 +27,40 @@ function isCorrectTranslation(result, expectedWords) {
 }
 
 async function testTranslationEngine() {
-    console.log('🚀 Starting Translation Engine Performance Test\n');
+    console.log('🚀 Starting Translation Engine Performance Test (Local Files)\n');
+    
+    // Reset engine state
+    _resetEngine();
     
     // Track initial memory
     const initialMemory = getMemoryUsage();
     console.log(`📊 Initial Memory Usage: ${initialMemory !== null ? initialMemory + ' MB' : 'Unknown'}\n`);
     
-    // Load test data
+    // Load test data from the correct location
     console.log('📂 Loading test data...');
-    const testData = fs.readFileSync('tests/fixtures/test-sentences.jsonl', 'utf8')
+    const testData = fs.readFileSync('integration-tests/fixtures/test-sentences.jsonl', 'utf8')
         .split('\n')
         .filter(line => line.trim())
         .map(line => JSON.parse(line));
     
     console.log(`✅ Loaded ${testData.length} test sentences\n`);
     
-    // Load translation engine
-    console.log('🔄 Loading translation engine...');
-    await loadEngine();
-    console.log('✅ Engine loaded successfully!\n');
+    // Load translation engine with local files
+    console.log('🔄 Loading translation engine (local files)...');
+    const loadStartTime = performance.now();
+    const loadStartMemory = getMemoryUsage();
+    
+    await loadEngineLocal();
+    
+    const loadEndTime = performance.now();
+    const loadEndMemory = getMemoryUsage();
+    const loadDuration = loadEndTime - loadStartTime;
+    const loadMemoryIncrease = loadEndMemory - loadStartMemory;
+    
+    console.log('✅ Engine loaded successfully!');
+    console.log(`⏱️  Model load time: ${loadDuration.toFixed(2)}ms`);
+    console.log(`💾 Memory increase during load: ${loadMemoryIncrease}MB`);
+    console.log(`💾 Memory after load: ${loadEndMemory}MB\n`);
     
     // Test results tracking
     const results = {
@@ -60,7 +79,7 @@ async function testTranslationEngine() {
     
     // Test each sentence
     for (const test of testData) {
-        const startTime = Date.now();
+        const startTime = performance.now();
         
         try {
             // Extract target word and sentence from the test data
@@ -70,7 +89,7 @@ async function testTranslationEngine() {
             
             // Translate using our engine
             const result = await translate(targetWord, sentence);
-            const translationTime = Date.now() - startTime;
+            const translationTime = performance.now() - startTime;
             
             // Check if translation is correct
             const isCorrect = result.status === 'success' && 
@@ -95,7 +114,7 @@ async function testTranslationEngine() {
             console.log(`   → Status: ${result.status}`);
             console.log(`   → Translated: "${result.targetWord}" | Expected: [${test.expectedWords.join(', ')}]`);
             console.log(`   → Full sentence: "${result.fullSentence}"`);
-            console.log(`   → Time: ${translationTime}ms`);
+            console.log(`   → Time: ${translationTime.toFixed(2)}ms`);
             console.log('');
             
         } catch (error) {
@@ -124,16 +143,14 @@ async function testTranslationEngine() {
     
     // Display final results
     console.log('=' .repeat(80));
-    console.log('📊 FINAL RESULTS - Translation Engine');
+    console.log('📊 FINAL RESULTS - Translation Engine (Local Files)');
     console.log('=' .repeat(80));
     
     console.log('\n🎯 ACCURACY BY CATEGORY:');
     Object.entries(results).forEach(([category, data]) => {
         const accuracy = data.total > 0 ? ((data.correct / data.total) * 100).toFixed(1) : 'N/A';
-        console.log(`  ${category.toUpperCase().padEnd(12)}: ${data.correct}/${data.total} (${accuracy}%)`);
-        if (data.failed.length > 0) {
-            console.log(`    Failed IDs: [${data.failed.join(', ')}]`);
-        }
+        const failedInfo = data.failed.length > 0 ? ` | Failed IDs: [${data.failed.join(', ')}]` : '';
+        console.log(`  ${category.toUpperCase().padEnd(12)}: ${data.correct}/${data.total} (${accuracy}%)${failedInfo}`);
     });
     
     console.log('\n📈 OVERALL PERFORMANCE:');
@@ -155,4 +172,4 @@ async function testTranslationEngine() {
 }
 
 // Run the test
-testTranslationEngine().catch(console.error); 
+testTranslationEngine().catch(console.error);

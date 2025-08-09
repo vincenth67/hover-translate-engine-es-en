@@ -526,7 +526,7 @@ npm run test:watch          # Run tests in watch mode
 #### Performance Tests
 ```bash
 # Main translation performance test (recommended)
-node scripts/test_translation_performance.js
+npm run test:perf
 
 # String manipulation performance tests
 npm test -- tests/performance/performance.test.js
@@ -567,16 +567,22 @@ hover-translate-engine-es-en/
 │   └── fixtures/
 │       └── test-sentences.jsonl    # Test dataset (40 sentences)
 ├── scripts/
-│   ├── test_translation_performance.js  # Main performance test (vanilla JS)
 │   ├── test-bundle.cjs             # Bundle functionality test
 │   ├── clean-dist.js               # Clean dist directory
 │   └── check-bundle.js             # Bundle validation
+├── integration-tests/
+│   ├── translation-performance.test.js  # Translation performance test (local files)
+│   ├── single-sentence-local.test.js    # Single sentence test (local files)
+│   └── webpack-bundle.cjs               # Bundle functionality test
 └── tests/
     ├── engine.test.js              # Unit tests (Jest)
     ├── performance/
     │   └── performance.test.js     # String manipulation performance tests
     ├── fixtures/
     │   └── test-sentences.jsonl    # Test dataset (40 sentences)
+    └── integration-tests/
+        ├── fixtures/
+        │   └── test-sentences.jsonl    # Test dataset (40 sentences)
     └── coverage/                   # Test coverage reports
 ```
 

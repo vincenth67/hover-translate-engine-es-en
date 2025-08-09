@@ -22,7 +22,7 @@
     "test": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js",
     "test:coverage": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --coverage",
     "test:watch": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --watch",
-    "test:perf": "node ./scripts/test_translation_performance.js",
+    "test:perf": "node --experimental-vm-modules integration-tests/translation-performance.test.js",
     "test:single": "node --experimental-vm-modules integration-tests/single-sentence-local.test.js",
     "collect-assets": "node scripts/collect-assets.js",
     "build:all": "npm run collect-assets && node scripts/build.js",
