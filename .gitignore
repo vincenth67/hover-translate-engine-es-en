@@ -86,6 +86,4 @@ dev-debug.log
 .taskmaster/*
 tasks.json
 tasks/ 
-*.onnx
-*.bin
-*.safetensors
+

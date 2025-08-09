@@ -364,6 +364,35 @@ const state = await loadEngine(wasmPaths);
 console.log(state); // "translate engine ready"
 ```
 
+### `loadEngineLocal()`
+
+Loads the Helsinki translation model using local bundled assets (offline mode).
+
+**Returns**: `Promise<string>` - Engine state after loading attempt
+
+**When to use `loadEngine()` vs `loadEngineLocal()`**:
+
+- **Use `loadEngine()`** when:
+  - Building web applications that can access the internet
+  - You want the latest model version from Hugging Face CDN
+  - You don't have local model files bundled
+  - Development/testing environments with internet access
+
+- **Use `loadEngineLocal()`** when:
+  - Building Chrome extensions (CSP blocks CDN access)
+  - Creating offline-capable applications
+  - You have local model files in `./dist/models/Xenova/opus-mt-es-en/`
+  - Production deployments where you want to avoid network dependencies
+
+**Example**:
+```javascript
+// For offline/extension usage
+import { loadEngineLocal } from 'hover-translate-engine-es-en';
+
+const state = await loadEngineLocal();
+console.log(state); // "translate engine ready"
+```
+
 ### `translate(targetWord, sentence)`
 
 Translates Spanish text to English using context-aware semicolon technique.
@@ -518,15 +547,16 @@ if (result.status === TranslationStatus.TRANSLATION_FAILED) {
 #### Unit Tests (Jest)
 ```bash
 npm test                    # Run all unit tests
+npm run test:cdn            # Run CDN-based unit tests
+npm run test:local          # Run local file unit tests
 npm run test:coverage       # Run tests with coverage report
-npm test -- tests/engine.test.js  # Run specific test file
 npm run test:watch          # Run tests in watch mode
 ```
 
 #### Performance Tests
 ```bash
 # Main translation performance test (recommended)
-node scripts/test_translation_performance.js
+npm run test:perf
 
 # String manipulation performance tests
 npm test -- tests/performance/performance.test.js
@@ -536,6 +566,18 @@ npm test -- tests/performance/performance.test.js
 ```bash
 # Test the webpack bundle functionality
 npm run test:bundle
+```
+
+#### Integration Tests
+```bash
+# Single sentence translation test with local files and performance stats
+npm run test:translate-local
+
+# Single sentence translation test with CDN/online loading
+npm run test:translate-cdn
+
+# Comprehensive performance test with all test sentences
+npm run test:perf
 ```
 
 ### Test Coverage
@@ -554,24 +596,24 @@ hover-translate-engine-es-en/
 ├── dist/                           # Webpack output (bundled version)
 │   └── hover-translate-engine.js   # Self-contained bundle (~55MB)
 ├── tests/
-│   ├── engine.test.js              # Unit tests (Jest)
-│   ├── webpack.test.js             # Bundle integration tests
+│   ├── engine-cdn.test.js          # CDN-based unit tests (Jest)
+│   ├── engine-local.test.js        # Local file unit tests (Jest)
 │   ├── performance/
 │   │   └── performance.test.js     # String manipulation performance tests
-│   └── fixtures/
-│       └── test-sentences.jsonl    # Test dataset (40 sentences)
+│   ├── fixtures/
+│   │   └── test-sentences.jsonl    # Test dataset (40 sentences)
+│   └── coverage/                   # Test coverage reports
 ├── scripts/
-│   ├── test_translation_performance.js  # Main performance test (vanilla JS)
 │   ├── test-bundle.cjs             # Bundle functionality test
 │   ├── clean-dist.js               # Clean dist directory
 │   └── check-bundle.js             # Bundle validation
-└── tests/
-    ├── engine.test.js              # Unit tests (Jest)
-    ├── performance/
-    │   └── performance.test.js     # String manipulation performance tests
-    ├── fixtures/
-    │   └── test-sentences.jsonl    # Test dataset (40 sentences)
-    └── coverage/                   # Test coverage reports
+└── integration-tests/
+    ├── performance.test.js              # Translation performance test (local files)
+    ├── translate-local.test.js          # Single sentence test (local files)
+    ├── translate-cdn.test.js            # Single sentence test (CDN/online)
+    ├── webpack-bundle.cjs               # Bundle functionality test
+    └── fixtures/
+        └── test-sentences.jsonl    # Test dataset (40 sentences)
 ```
 
 ### Contributing
