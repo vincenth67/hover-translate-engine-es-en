@@ -53,6 +53,39 @@ function getFileInfo(filePath) {
   }
 }
 
+// Helper function to recursively scan directory and get all files
+function scanDirectory(dirPath, basePath = '') {
+  const files = [];
+  
+  if (!fs.existsSync(dirPath)) {
+    return files;
+  }
+  
+  const items = fs.readdirSync(dirPath);
+  
+  for (const item of items) {
+    const fullPath = path.join(dirPath, item);
+    const relativePath = path.join(basePath, item);
+    const stats = fs.statSync(fullPath);
+    
+    if (stats.isDirectory()) {
+      // Recursively scan subdirectories
+      const subFiles = scanDirectory(fullPath, relativePath);
+      files.push(...subFiles);
+    } else {
+      // Add file with relative path
+      files.push({
+        path: relativePath,
+        fullPath: fullPath,
+        size: stats.size,
+        sizeFormatted: formatFileSize(stats.size)
+      });
+    }
+  }
+  
+  return files;
+}
+
 // Main build function
 async function buildWithLogging() {
   const tempDir = './dist-temp';
@@ -90,6 +123,52 @@ async function buildWithLogging() {
     
     log.success(`WASM file 1 found: ${wasmSource1} (${wasm1Info.sizeFormatted})`);
     log.success(`WASM file 2 found: ${wasmSource2} (${wasm2Info.sizeFormatted})`);
+    
+    // Check if models directory exists (for full build vs dev build)
+    const modelsDir = './dist/models/Xenova/opus-mt-es-en';
+    const modelsDirExists = fs.existsSync(modelsDir);
+    
+    if (modelsDirExists) {
+      log.success('Models directory found - building with offline assets');
+      
+      // Validate required model files
+      const requiredFiles = [
+        'generation_config.json',
+        'config.json',
+        'tokenizer.json',
+        'tokenizer_config.json',
+        'onnx/decoder_model_merged.onnx',
+        'onnx/encoder_model.onnx'
+      ];
+      
+      let totalModelsSize = 0;
+      let missingFiles = [];
+      
+      for (const file of requiredFiles) {
+        const filePath = path.join(modelsDir, file);
+        const fileInfo = getFileInfo(filePath);
+        
+        if (fileInfo.exists) {
+          totalModelsSize += fileInfo.size;
+          log.info(`  ✓ ${file} (${fileInfo.sizeFormatted})`);
+        } else {
+          missingFiles.push(file);
+          log.error(`  ✗ ${file} - MISSING`);
+        }
+      }
+      
+      if (missingFiles.length > 0) {
+        log.error(`Missing ${missingFiles.length} required model files`);
+        log.error('Run: npm run collect-assets to download model files');
+        process.exit(1);
+      }
+      
+      log.success(`All model files validated (${formatFileSize(totalModelsSize)})`);
+    } else {
+      log.warning('Models directory not found - building for development (CDN mode)');
+      log.info('For production build with offline assets, run: npm run build');
+      log.info('For development build without assets, run: npm run build:dev');
+    }
     
     // Step 2: Prepare build directories
     log.step('Step 2: Preparing build directories');
@@ -193,24 +272,57 @@ async function buildWithLogging() {
     const finalWasm1Info = getFileInfo(finalWasm1);
     const finalWasm2Info = getFileInfo(finalWasm2);
     
-    const totalSize = finalMainBundleInfo.size + finalWasm1Info.size + finalWasm2Info.size;
+    let totalSize = finalMainBundleInfo.size + finalWasm1Info.size + finalWasm2Info.size;
+    let buildType = 'Development (CDN mode)';
+    
+    // Check if models directory exists in final build
+    const finalModelsDir = './dist/models/Xenova/opus-mt-es-en';
+    if (fs.existsSync(finalModelsDir)) {
+      buildType = 'Production (Offline mode)';
+      
+      // Calculate models directory size
+      const modelsFiles = scanDirectory(finalModelsDir);
+      let modelsSize = 0;
+      for (const file of modelsFiles) {
+        modelsSize += file.size;
+      }
+      totalSize += modelsSize;
+      
+      log.info('Package structure:');
+      log.info('  dist/');
+      log.info(`  ├── hover-translate-engine.js (${finalMainBundleInfo.sizeFormatted})`);
+      log.info(`  ├── README.md (${getFileInfo('./dist/README.md').sizeFormatted})`);
+      log.info('  ├── wasm/');
+      log.info(`  │   ├── ort-wasm-simd-threaded.jsep.wasm (${finalWasm1Info.sizeFormatted})`);
+      log.info(`  │   └── ort-wasm-simd-threaded.jsep.mjs (${finalWasm2Info.sizeFormatted})`);
+      log.info('  └── models/');
+      log.info(`      └── Xenova/opus-mt-es-en/ (${formatFileSize(modelsSize)})`);
+    } else {
+      log.info('Package structure:');
+      log.info('  dist/');
+      log.info(`  ├── hover-translate-engine.js (${finalMainBundleInfo.sizeFormatted})`);
+      log.info(`  ├── README.md (${getFileInfo('./dist/README.md').sizeFormatted})`);
+      log.info('  └── wasm/');
+      log.info(`      ├── ort-wasm-simd-threaded.jsep.wasm (${finalWasm1Info.sizeFormatted})`);
+      log.info(`      └── ort-wasm-simd-threaded.jsep.mjs (${finalWasm2Info.sizeFormatted})`);
+    }
     
     log.info(`Build completed in ${buildTime}ms`);
+    log.info(`Build type: ${buildType}`);
     log.info(`Total package size: ${formatFileSize(totalSize)}`);
-    log.info('Package structure:');
-    log.info('  dist/');
-    log.info(`  ├── hover-translate-engine.js (${finalMainBundleInfo.sizeFormatted})`);
-    log.info(`  ├── README.md (${getFileInfo('./dist/README.md').sizeFormatted})`);
-    log.info('  └── wasm/');
-    log.info(`      ├── ort-wasm-simd-threaded.jsep.wasm (${finalWasm1Info.sizeFormatted})`);
-    log.info(`      └── ort-wasm-simd-threaded.jsep.mjs (${finalWasm2Info.sizeFormatted})`);
     
     // Final success message
     console.log('\n' + '='.repeat(60));
     log.success('ATOMIC BUILD SUCCESSFUL! 🎉');
+    log.success(`Build type: ${buildType}`);
     log.success('Package atomically replaced - no corruption risk');
-    log.success('Package is ready for npm publish');
-    log.success('Chrome extension can now install and use this package');
+    if (buildType === 'Production (Offline mode)') {
+      log.success('Package is ready for production deployment');
+      log.success('Chrome extension can now install and use this package offline');
+    } else {
+      log.success('Package is ready for development');
+      log.success('For production build with offline assets, run: npm run build');
+    }
     console.log('='.repeat(60) + '\n');
     
   } catch (error) {
