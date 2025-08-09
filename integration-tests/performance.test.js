@@ -38,7 +38,7 @@ async function testTranslationEngine() {
     
     // Load test data from the correct location
     console.log('📂 Loading test data...');
-    const testData = fs.readFileSync('integration-tests/fixtures/test-sentences.jsonl', 'utf8')
+    const testData = fs.readFileSync('fixtures/test-sentences.jsonl', 'utf8')
         .split('\n')
         .filter(line => line.trim())
         .map(line => JSON.parse(line));

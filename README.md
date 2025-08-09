@@ -518,8 +518,9 @@ if (result.status === TranslationStatus.TRANSLATION_FAILED) {
 #### Unit Tests (Jest)
 ```bash
 npm test                    # Run all unit tests
+npm run test:cdn            # Run CDN-based unit tests
+npm run test:local          # Run local file unit tests
 npm run test:coverage       # Run tests with coverage report
-npm test -- tests/engine.test.js  # Run specific test file
 npm run test:watch          # Run tests in watch mode
 ```
 
@@ -541,7 +542,13 @@ npm run test:bundle
 #### Integration Tests
 ```bash
 # Single sentence translation test with local files and performance stats
-npm run test:single
+npm run test:translate-local
+
+# Single sentence translation test with CDN/online loading
+npm run test:translate-cdn
+
+# Comprehensive performance test with all test sentences
+npm run test:perf
 ```
 
 ### Test Coverage
@@ -560,30 +567,24 @@ hover-translate-engine-es-en/
 ├── dist/                           # Webpack output (bundled version)
 │   └── hover-translate-engine.js   # Self-contained bundle (~55MB)
 ├── tests/
-│   ├── engine.test.js              # Unit tests (Jest)
-│   ├── webpack.test.js             # Bundle integration tests
+│   ├── engine-cdn.test.js          # CDN-based unit tests (Jest)
+│   ├── engine-local.test.js        # Local file unit tests (Jest)
 │   ├── performance/
 │   │   └── performance.test.js     # String manipulation performance tests
-│   └── fixtures/
-│       └── test-sentences.jsonl    # Test dataset (40 sentences)
+│   ├── fixtures/
+│   │   └── test-sentences.jsonl    # Test dataset (40 sentences)
+│   └── coverage/                   # Test coverage reports
 ├── scripts/
 │   ├── test-bundle.cjs             # Bundle functionality test
 │   ├── clean-dist.js               # Clean dist directory
 │   └── check-bundle.js             # Bundle validation
-├── integration-tests/
-│   ├── translation-performance.test.js  # Translation performance test (local files)
-│   ├── single-sentence-local.test.js    # Single sentence test (local files)
-│   └── webpack-bundle.cjs               # Bundle functionality test
-└── tests/
-    ├── engine.test.js              # Unit tests (Jest)
-    ├── performance/
-    │   └── performance.test.js     # String manipulation performance tests
-    ├── fixtures/
-    │   └── test-sentences.jsonl    # Test dataset (40 sentences)
-    └── integration-tests/
-        ├── fixtures/
-        │   └── test-sentences.jsonl    # Test dataset (40 sentences)
-    └── coverage/                   # Test coverage reports
+└── integration-tests/
+    ├── performance.test.js              # Translation performance test (local files)
+    ├── translate-local.test.js          # Single sentence test (local files)
+    ├── translate-cdn.test.js            # Single sentence test (CDN/online)
+    ├── webpack-bundle.cjs               # Bundle functionality test
+    └── fixtures/
+        └── test-sentences.jsonl    # Test dataset (40 sentences)
 ```
 
 ### Contributing
