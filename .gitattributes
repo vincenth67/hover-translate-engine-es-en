@@ -1,0 +1,4 @@
+dist/models/**/*.onnx filter=lfs diff=lfs merge=lfs -text
+dist/models/**/*.bin filter=lfs diff=lfs merge=lfs -text
+dist/models/**/*.safetensors filter=lfs diff=lfs merge=lfs -text
+*.wasm filter=lfs diff=lfs merge=lfs -text
