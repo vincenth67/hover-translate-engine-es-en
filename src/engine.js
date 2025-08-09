@@ -44,6 +44,39 @@ export async function loadEngine() {
 }
 
 /**
+ * Loads the Helsinki translation model using local bundled assets
+ * @returns {Promise<string>} Engine state after loading attempt. One of EngineState values.
+ */
+export async function loadEngineLocal() {
+  try {
+    if (!translator) {
+      console.debug('Loading Xenova/opus-mt-es-en model from local assets...');
+      
+      // Configure local WASM paths for bundled assets
+      const wasmPaths = {
+        'ort-wasm-simd-threaded.jsep.wasm': './wasm/ort-wasm-simd-threaded.jsep.wasm',
+        'ort-wasm-simd-threaded.jsep.mjs': './wasm/ort-wasm-simd-threaded.jsep.mjs'
+      };
+      
+      console.debug('[Engine] Using local WASM paths:', wasmPaths);
+      console.debug('[Engine] Using local model path: ./models/Xenova/opus-mt-es-en/');
+      
+      translator = await pipeline('translation', './models/Xenova/opus-mt-es-en/', { 
+        dtype: 'fp32',
+        wasmPaths: wasmPaths
+      });
+      console.debug('Xenova model loaded successfully from local assets');
+    }
+    _engineState = EngineState.READY;
+    return _engineState;
+  } catch (error) {
+    _engineState = EngineState.INITIALIZATION_FAILED;
+    console.error('Xenova model failed to load from local assets:', error);
+    return _engineState;
+  }
+}
+
+/**
  * Translates Spanish text to English using context-aware semicolon technique
  * @param {string} targetWord - Spanish word/phrase to translate (1-6 words max)
  * @param {string} sentence - Full sentence containing the target word
