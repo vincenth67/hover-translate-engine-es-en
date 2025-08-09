@@ -59,9 +59,9 @@ export async function loadEngineLocal() {
       };
       
       console.debug('[Engine] Using local WASM paths:', wasmPaths);
-      console.debug('[Engine] Using local model path: ./models/Xenova/opus-mt-es-en/');
+      console.debug('[Engine] Using local model path: ./dist/models/Xenova/opus-mt-es-en/');
       
-      translator = await pipeline('translation', './models/Xenova/opus-mt-es-en/', { 
+      translator = await pipeline('translation', './dist/models/Xenova/opus-mt-es-en/', { 
         dtype: 'fp32',
         wasmPaths: wasmPaths
       });

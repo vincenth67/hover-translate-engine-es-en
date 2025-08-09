@@ -538,6 +538,12 @@ npm test -- tests/performance/performance.test.js
 npm run test:bundle
 ```
 
+#### Integration Tests
+```bash
+# Single sentence translation test with local files and performance stats
+npm run test:single
+```
+
 ### Test Coverage
 - **Current Coverage**: 87.75% (Statements: 87.75%, Branches: 55.55%, Functions: 71.42%, Lines: 87.75%)
 - **Coverage Threshold**: 45% (configured in package.json)
