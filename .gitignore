@@ -90,3 +90,7 @@ dev-debug.log
 .taskmaster/*
 tasks.json
 tasks/ 
+dist/models/
+*.onnx
+*.bin
+*.safetensors
