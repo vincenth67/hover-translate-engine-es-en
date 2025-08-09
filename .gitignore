@@ -7,10 +7,6 @@ yarn-error.log*
 # Build outputs
 # dist/    <-- we need to produce the dist/ webpack!
 # dist/models/  <-- exclude large model files from git
-dist/models/
-build/
-*.bundle.js
-*.bundle.js.map
 
 # Test coverage
 tests/coverage/
@@ -90,7 +86,6 @@ dev-debug.log
 .taskmaster/*
 tasks.json
 tasks/ 
-dist/models/
 *.onnx
 *.bin
 *.safetensors
