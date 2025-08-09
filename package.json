@@ -27,6 +27,7 @@
     "test:perf-local": "node --experimental-vm-modules integration-tests/performance.test.js",
     "test:translate-local": "node --experimental-vm-modules integration-tests/translate-local.test.js",
     "test:translate-cdn": "node --experimental-vm-modules integration-tests/translate-cdn.test.js",
+    "test:chrome": "node --experimental-vm-modules integration-tests/translate-chrome-extension.test.js",
     "test:all": "node --experimental-vm-modules integration-tests/run-all.js",
     "collect-assets": "node scripts/collect-assets.js",
     "build:all": "npm run collect-assets && node scripts/build.js",

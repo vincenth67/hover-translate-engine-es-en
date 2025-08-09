@@ -44,26 +44,30 @@ export async function loadEngine() {
 }
 
 /**
- * Loads the Helsinki translation model using local bundled assets
+ * Loads the Helsinki translation model using local bundled assets.
+ * Accepts optional path parameters for Chrome extension and custom environments.
+ *
+ * @param {Object|null} wasmPaths - Mapping of ONNX Runtime WASM filenames to their local paths/URLs.
+ * @param {string|null} modelPath - Path or URL to the local model directory containing Xenova assets.
  * @returns {Promise<string>} Engine state after loading attempt. One of EngineState values.
  */
-export async function loadEngineLocal() {
+export async function loadEngineLocal(wasmPaths = null, modelPath = null) {
+  // Determine effective paths (defaults maintain backward compatibility)
+  const finalWasmPaths = wasmPaths || {
+    'ort-wasm-simd-threaded.jsep.wasm': './wasm/ort-wasm-simd-threaded.jsep.wasm',
+    'ort-wasm-simd-threaded.jsep.mjs': './wasm/ort-wasm-simd-threaded.jsep.mjs'
+  };
+  const finalModelPath = modelPath || './dist/models/Xenova/opus-mt-es-en/';
+
   try {
     if (!translator) {
       console.debug('Loading Xenova/opus-mt-es-en model from local assets...');
-      
-      // Configure local WASM paths for bundled assets
-      const wasmPaths = {
-        'ort-wasm-simd-threaded.jsep.wasm': './wasm/ort-wasm-simd-threaded.jsep.wasm',
-        'ort-wasm-simd-threaded.jsep.mjs': './wasm/ort-wasm-simd-threaded.jsep.mjs'
-      };
-      
-      console.debug('[Engine] Using local WASM paths:', wasmPaths);
-      console.debug('[Engine] Using local model path: ./dist/models/Xenova/opus-mt-es-en/');
-      
-      translator = await pipeline('translation', './dist/models/Xenova/opus-mt-es-en/', { 
+      console.debug('[Engine] Using WASM paths:', finalWasmPaths);
+      console.debug('[Engine] Using model path:', finalModelPath);
+
+      translator = await pipeline('translation', finalModelPath, {
         dtype: 'fp32',
-        wasmPaths: wasmPaths
+        wasmPaths: finalWasmPaths
       });
       console.debug('Xenova model loaded successfully from local assets');
     }
