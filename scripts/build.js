@@ -232,8 +232,8 @@ async function buildWithLogging() {
     log.success(`WASM file created: ${tempWasm1} (${tempWasm1Info.sizeFormatted})`);
     log.success(`WASM file created: ${tempWasm2} (${tempWasm2Info.sizeFormatted})`);
     
-    // Step 5: Copy README to temp directory
-    log.step('Step 5: Adding package documentation');
+    // Step 5: Copy README and models to temp directory
+    log.step('Step 5: Adding package documentation and models');
     
     // Copy root README.md to temp directory
     const rootReadme = './README.md';
@@ -245,6 +245,41 @@ async function buildWithLogging() {
       log.success(`README.md copied to package (${readmeInfo.sizeFormatted})`);
     } else {
       log.warning('README.md not found in root directory');
+    }
+    
+    // Copy models from backup to temp directory if they exist
+    const backupModelsDir = `${backupDir}/models`;
+    const tempModelsDir = `${tempDir}/models`;
+    
+    if (fs.existsSync(backupModelsDir)) {
+      log.info('Copying models from backup to temp directory...');
+      
+      // Use recursive copy to preserve directory structure
+      const copyRecursive = (src, dest) => {
+        if (fs.statSync(src).isDirectory()) {
+          if (!fs.existsSync(dest)) {
+            fs.mkdirSync(dest, { recursive: true });
+          }
+          const files = fs.readdirSync(src);
+          for (const file of files) {
+            copyRecursive(path.join(src, file), path.join(dest, file));
+          }
+        } else {
+          fs.copyFileSync(src, dest);
+        }
+      };
+      
+      copyRecursive(backupModelsDir, tempModelsDir);
+      
+      // Calculate and log models size
+      const modelsFiles = scanDirectory(tempModelsDir);
+      let modelsSize = 0;
+      for (const file of modelsFiles) {
+        modelsSize += file.size;
+      }
+      log.success(`Models copied to temp directory (${formatFileSize(modelsSize)})`);
+    } else {
+      log.info('No models found in backup - building for development (CDN mode)');
     }
     
     // Step 6: Atomic replacement
