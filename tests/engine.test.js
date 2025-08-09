@@ -46,7 +46,28 @@ describe('HoverTranslateEngine Unit Tests', () => {
     });
   });
 
+  describe('loadEngine() with explicit wasmPaths', () => {
+    const wasmPaths = {
+      'ort-wasm-simd-threaded.jsep.mjs': 'dist/wasm/ort-wasm-simd-threaded.jsep.mjs',
+      'ort-wasm-simd-threaded.jsep.wasm': 'dist/wasm/ort-wasm-simd-threaded.jsep.wasm'
+    };
 
+    test('loadEngine() loads with explicit wasmPaths', async () => {
+      _resetEngine();
+      const result = await loadEngine(wasmPaths);
+      expect(result).toMatch(/translate engine ready/);
+      expect(getEngineState()).toMatch(/translate engine ready/);
+    });
+
+    test('loadEngine() with wasmPaths and translate()', async () => {
+      _resetEngine();
+      await loadEngine(wasmPaths);
+      const result = await translate('banco', 'El banco está cerrado.');
+      expect(result.status).toBe(TranslationStatus.SUCCESS);
+      expect(typeof result.targetWord).toBe('string');
+      expect(typeof result.fullSentence).toBe('string');
+    });
+  });
 
   describe('translate()', () => {
     test('translate() handles invalid inputs correctly', async () => {
