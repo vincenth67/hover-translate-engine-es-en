@@ -613,6 +613,32 @@ npm run test:perf
 npm run test:chrome
 ```
 
+### Chrome Extension CSP Requirement
+
+When using `loadEngineLocal(wasmPaths, modelPath)` inside an MV3 extension offscreen document, WebAssembly compilation must be allowed by CSP. Add/ensure the following in your `manifest.json`:
+
+```json
+{
+  "content_security_policy": {
+    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'"
+  }
+}
+```
+
+Also ensure `web_accessible_resources` includes both:
+
+```json
+{
+  "web_accessible_resources": [{
+    "resources": [
+      "node_modules/hover-translate-engine-es-en/dist/wasm/*",
+      "node_modules/hover-translate-engine-es-en/dist/models/Xenova/opus-mt-es-en/**"
+    ],
+    "matches": ["<all_urls>"]
+  }]
+}
+```
+
 ### Test Coverage
 - **Current Coverage**: 87.75% (Statements: 87.75%, Branches: 55.55%, Functions: 71.42%, Lines: 87.75%)
 - **Coverage Threshold**: 45% (configured in package.json)

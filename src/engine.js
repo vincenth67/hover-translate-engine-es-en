@@ -51,6 +51,7 @@ export async function loadEngine() {
  * @param {string|null} modelPath - Path or URL to the local model directory containing Xenova assets.
  * @returns {Promise<string>} Engine state after loading attempt. One of EngineState values.
  */
+//===================================================================================================================
 export async function loadEngineLocal(wasmPaths = null, modelPath = null) {
   // Determine effective paths (defaults maintain backward compatibility)
   const finalWasmPaths = wasmPaths || {
@@ -58,6 +59,10 @@ export async function loadEngineLocal(wasmPaths = null, modelPath = null) {
     'ort-wasm-simd-threaded.jsep.mjs': './wasm/ort-wasm-simd-threaded.jsep.mjs'
   };
   const finalModelPath = modelPath || './dist/models/Xenova/opus-mt-es-en/';
+
+  console.debug('[Engine] Final WASM paths:', finalWasmPaths);
+  console.debug('[Engine] Final model path:', finalModelPath);
+
 
   // Configure Transformers.js to use local models only and resolve from provided path
   // Derive a local model root and repo id for robust resolution in browsers/Chrome extensions
@@ -87,51 +92,54 @@ export async function loadEngineLocal(wasmPaths = null, modelPath = null) {
     wasmBaseDir = lastSlash > -1 ? pick.slice(0, lastSlash + 1) : pick;
   }
 
-  // Enforce local-only operation and set model root
-  try {
-    env.allowLocalModels = true;
-    env.allowRemoteModels = false;
-    env.localModelPath = localModelRoot;
-    // Ensure ONNX runtime WASM loader uses our local paths instead of CDN
-    if (!env.backends) env.backends = {};
-    if (!env.backends.onnx) env.backends.onnx = {};
-    if (!env.backends.onnx.wasm) env.backends.onnx.wasm = {};
-    env.backends.onnx.wasm.wasmPaths = wasmBaseDir || finalWasmPaths;
-    // Avoid Cache API writes for chrome-extension:// scheme
-    env.useBrowserCache = false;
-    console.debug('[Engine] Env flags set:', {
-      allowLocalModels: env.allowLocalModels,
-      allowRemoteModels: env.allowRemoteModels,
-      localModelPath: env.localModelPath
-    });
-    console.debug('[Engine] ONNX WASM base/path:', env.backends.onnx.wasm.wasmPaths);
-  } catch (_) {
-    // env may be partially mocked in tests; ignore if not configurable
-  }
+  // Enforce local-only operation and set model root (minimal essential flags)
+  env.allowLocalModels = true;
+  env.allowRemoteModels = false;
+  env.localModelPath = localModelRoot;
+  env.useBrowserCache = false; // avoid Cache API on chrome-extension://
+  
 
   try {
     if (!translator) {
-      console.debug('Loading Xenova/opus-mt-es-en model from local assets...');
-      console.debug('[Engine] Using WASM paths:', finalWasmPaths);
-      console.debug('[Engine] Using model path (provided):', finalModelPath);
-      console.debug('[Engine] Resolved local model root:', localModelRoot);
-      console.debug('[Engine] Loading repo id from local root:', xenovaRepoId);
+      console.debug('[Engine.loadEngineLocal] Initializing using local assets only');
+      console.debug('[Engine.loadEngineLocal] WASM paths:', finalWasmPaths);
+      console.debug('[Engine.loadEngineLocal] Provided modelPath:', finalModelPath);
+      console.debug('[Engine.loadEngineLocal] Resolved localModelRoot:', localModelRoot);
+      console.debug('[Engine.loadEngineLocal] Repo id to load:', xenovaRepoId);
 
       // Load by repo id with local model root configured to support chrome-extension:// URLs
       translator = await pipeline('translation', xenovaRepoId, {
         dtype: 'fp32',
         wasmPaths: finalWasmPaths
       });
-      console.debug('Xenova model loaded successfully from local assets');
+      console.debug('[Engine.loadEngineLocal] Model loaded successfully from local assets');
     }
     _engineState = EngineState.READY;
     return _engineState;
   } catch (error) {
     _engineState = EngineState.INITIALIZATION_FAILED;
-    console.error('Xenova model failed to load from local assets:', error);
+    console.error('[Engine.loadEngineLocal] FAILED to load from local assets:', error);
     return _engineState;
   }
 }
+//===================================================================================================================
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /**
  * Translates Spanish text to English using context-aware semicolon technique
