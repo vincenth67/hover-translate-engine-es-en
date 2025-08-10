@@ -46,11 +46,11 @@ describe('loadEngineLocal() parameterized usage', () => {
     const state = await loadEngineLocal(explicitWasmPaths, explicitModelPath);
     expect(state).toBe(EngineState.READY);
 
-    // Assert pipeline was called with our explicit parameters
+    // Assert pipeline was called with repo id while using our explicit parameters via env.localModelPath
     expect(pipeline).toHaveBeenCalled();
     const [task, modelPathArg, options] = pipeline.mock.calls[0];
     expect(task).toBe('translation');
-    expect(modelPathArg).toBe(explicitModelPath);
+    expect(modelPathArg).toBe('Xenova/opus-mt-es-en');
     expect(options).toEqual(expect.objectContaining({ wasmPaths: explicitWasmPaths, dtype: 'fp32' }));
   });
 
@@ -68,7 +68,7 @@ describe('loadEngineLocal() parameterized usage', () => {
 
     expect(pipeline).toHaveBeenCalled();
     const [, modelPathArg, options] = pipeline.mock.calls[0];
-    expect(modelPathArg).toBe(customModelPath);
+    expect(modelPathArg).toBe('Xenova/opus-mt-es-en');
     expect(options.wasmPaths).toEqual(DEFAULT_WASM_PATHS);
   });
 
@@ -89,7 +89,7 @@ describe('loadEngineLocal() parameterized usage', () => {
 
     expect(pipeline).toHaveBeenCalled();
     const [, modelPathArg, options] = pipeline.mock.calls[0];
-    expect(modelPathArg).toBe(DEFAULT_MODEL_PATH);
+    expect(modelPathArg).toBe('Xenova/opus-mt-es-en');
     expect(options.wasmPaths).toEqual(customWasmPaths);
   });
 });

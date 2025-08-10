@@ -1,4 +1,4 @@
-import { pipeline } from '@huggingface/transformers';
+import { pipeline, env } from '@huggingface/transformers';
 
 
 
@@ -59,13 +59,40 @@ export async function loadEngineLocal(wasmPaths = null, modelPath = null) {
   };
   const finalModelPath = modelPath || './dist/models/Xenova/opus-mt-es-en/';
 
+  // Configure Transformers.js to use local models only and resolve from provided path
+  // Derive a local model root and repo id for robust resolution in browsers/Chrome extensions
+  const xenovaRepoId = 'Xenova/opus-mt-es-en';
+  let localModelRoot = finalModelPath;
+  const repoSegment = '/Xenova/opus-mt-es-en';
+  const altRepoSegment = '\\Xenova\\opus-mt-es-en';
+  if (finalModelPath.includes(repoSegment)) {
+    localModelRoot = finalModelPath.split(repoSegment)[0];
+  } else if (finalModelPath.includes(altRepoSegment)) {
+    localModelRoot = finalModelPath.split(altRepoSegment)[0];
+  }
+  // Ensure trailing slash for root path consistency
+  if (!localModelRoot.endsWith('/') && !localModelRoot.endsWith('\\')) {
+    localModelRoot = `${localModelRoot}/`;
+  }
+
+  // Enforce local-only operation and set model root
+  try {
+    env.allowRemoteModels = false;
+    env.localModelPath = localModelRoot;
+  } catch (_) {
+    // env may be partially mocked in tests; ignore if not configurable
+  }
+
   try {
     if (!translator) {
       console.debug('Loading Xenova/opus-mt-es-en model from local assets...');
       console.debug('[Engine] Using WASM paths:', finalWasmPaths);
-      console.debug('[Engine] Using model path:', finalModelPath);
+      console.debug('[Engine] Using model path (provided):', finalModelPath);
+      console.debug('[Engine] Resolved local model root:', localModelRoot);
+      console.debug('[Engine] Loading repo id from local root:', xenovaRepoId);
 
-      translator = await pipeline('translation', finalModelPath, {
+      // Load by repo id with local model root configured to support chrome-extension:// URLs
+      translator = await pipeline('translation', xenovaRepoId, {
         dtype: 'fp32',
         wasmPaths: finalWasmPaths
       });

@@ -2,7 +2,7 @@
 
 A standalone Spanish-to-English translation engine using the Helsinki model with an innovative semicolon technique for context-aware translation. Designed for Chrome extensions and web applications requiring fast, accurate translations.
 
-**Version 0.2.4**: Now includes webpack bundling for Chrome extension integration with zero external dependencies and WASM files included in package.
+**Version 0.2.6**: Adds parameterized `loadEngineLocal(wasmPaths?, modelPath?)` for Chrome extensions/offline use. Includes webpack bundling with local WASM and model assets.
 
 ## Features
 
@@ -47,12 +47,13 @@ if (result.status === TranslationStatus.SUCCESS) {
 // Load the bundled version (no imports needed)
 // Functions available globally: loadEngine, translate, getEngineState, TranslationStatus
 
-// Use local WASM files (required for Chrome extensions)
+// Use local assets (required for Chrome extensions)
 const wasmPaths = {
   'ort-wasm-simd-threaded.jsep.wasm': chrome.runtime.getURL('node_modules/hover-translate-engine-es-en/dist/wasm/ort-wasm-simd-threaded.jsep.wasm'),
   'ort-wasm-simd-threaded.jsep.mjs': chrome.runtime.getURL('node_modules/hover-translate-engine-es-en/dist/wasm/ort-wasm-simd-threaded.jsep.mjs')
 };
-await loadEngine(wasmPaths);
+const modelPath = chrome.runtime.getURL('node_modules/hover-translate-engine-es-en/dist/models/Xenova/opus-mt-es-en/');
+await loadEngineLocal(wasmPaths, modelPath);
 
 // Translate with context
 const result = await translate("banco", "El banco central subió las tasas.");
@@ -82,7 +83,8 @@ npm install hover-translate-engine-es-en
   }],
   "web_accessible_resources": [{
     "resources": [
-      "node_modules/hover-translate-engine-es-en/dist/wasm/*"
+      "node_modules/hover-translate-engine-es-en/dist/wasm/*",
+      "node_modules/hover-translate-engine-es-en/dist/models/Xenova/opus-mt-es-en/**"
     ],
     "matches": ["<all_urls>"]
   }]
@@ -94,12 +96,13 @@ npm install hover-translate-engine-es-en
 // src/main.js - No imports needed, bundle loads globally
 
 async function initializeTranslation() {
-  // Use local WASM files (required for Chrome extensions)
+  // Use local assets (required for Chrome extensions)
   const wasmPaths = {
     'ort-wasm-simd-threaded.jsep.wasm': chrome.runtime.getURL('node_modules/hover-translate-engine-es-en/dist/wasm/ort-wasm-simd-threaded.jsep.wasm'),
     'ort-wasm-simd-threaded.jsep.mjs': chrome.runtime.getURL('node_modules/hover-translate-engine-es-en/dist/wasm/ort-wasm-simd-threaded.jsep.mjs')
   };
-  await loadEngine(wasmPaths);
+  const modelPath = chrome.runtime.getURL('node_modules/hover-translate-engine-es-en/dist/models/Xenova/opus-mt-es-en/');
+  await loadEngineLocal(wasmPaths, modelPath);
   
   console.log('Engine ready:', getEngineState());
 }
@@ -139,11 +142,12 @@ Content Script → Background Script → Offscreen Document → Translation Engi
     "js": ["content.js"]
   }],
   "web_accessible_resources": [{
-    "resources": [
-      "node_modules/hover-translate-engine-es-en/dist/wasm/*"
-    ],
-    "matches": ["<all_urls>"]
-  }],
+      "resources": [
+        "node_modules/hover-translate-engine-es-en/dist/wasm/*",
+        "node_modules/hover-translate-engine-es-en/dist/models/Xenova/opus-mt-es-en/**"
+      ],
+      "matches": ["<all_urls>"]
+    }],
   "permissions": ["offscreen"]
 }
 ```
@@ -364,9 +368,24 @@ const state = await loadEngine(wasmPaths);
 console.log(state); // "translate engine ready"
 ```
 
-### `loadEngineLocal()`
+### `loadEngineLocal(wasmPaths?, modelPath?)`
 
 Loads the Helsinki translation model using local bundled assets (offline mode).
+
+**Parameters**:
+- `wasmPaths` (optional): Object mapping ONNX Runtime WASM filenames to local paths/URLs
+- `modelPath` (optional): Path/URL to the local model directory containing Xenova assets
+
+If omitted, the following defaults are used:
+```javascript
+{
+  wasmPaths: {
+    'ort-wasm-simd-threaded.jsep.wasm': './wasm/ort-wasm-simd-threaded.jsep.wasm',
+    'ort-wasm-simd-threaded.jsep.mjs': './wasm/ort-wasm-simd-threaded.jsep.mjs'
+  },
+  modelPath: './dist/models/Xenova/opus-mt-es-en/'
+}
+```
 
 **Returns**: `Promise<string>` - Engine state after loading attempt
 
@@ -384,13 +403,24 @@ Loads the Helsinki translation model using local bundled assets (offline mode).
   - You have local model files in `./dist/models/Xenova/opus-mt-es-en/`
   - Production deployments where you want to avoid network dependencies
 
-**Example**:
+**Example (defaults)**:
 ```javascript
 // For offline/extension usage
 import { loadEngineLocal } from 'hover-translate-engine-es-en';
 
 const state = await loadEngineLocal();
 console.log(state); // "translate engine ready"
+```
+
+**Example (Chrome extension with explicit paths)**:
+```javascript
+const wasmPaths = {
+  'ort-wasm-simd-threaded.jsep.wasm': chrome.runtime.getURL('node_modules/hover-translate-engine-es-en/dist/wasm/ort-wasm-simd-threaded.jsep.wasm'),
+  'ort-wasm-simd-threaded.jsep.mjs': chrome.runtime.getURL('node_modules/hover-translate-engine-es-en/dist/wasm/ort-wasm-simd-threaded.jsep.mjs')
+};
+const modelPath = chrome.runtime.getURL('node_modules/hover-translate-engine-es-en/dist/models/Xenova/opus-mt-es-en/');
+
+await loadEngineLocal(wasmPaths, modelPath);
 ```
 
 ### `translate(targetWord, sentence)`
@@ -578,6 +608,9 @@ npm run test:translate-cdn
 
 # Comprehensive performance test with all test sentences
 npm run test:perf
+
+# Chrome extension-style local path test
+npm run test:chrome
 ```
 
 ### Test Coverage
@@ -611,6 +644,7 @@ hover-translate-engine-es-en/
     ├── performance.test.js              # Translation performance test (local files)
     ├── translate-local.test.js          # Single sentence test (local files)
     ├── translate-cdn.test.js            # Single sentence test (CDN/online)
+    ├── translate-chrome-extension.test.js # Chrome extension-style paths test (local assets)
     ├── webpack-bundle.cjs               # Bundle functionality test
     └── fixtures/
         └── test-sentences.jsonl    # Test dataset (40 sentences)
