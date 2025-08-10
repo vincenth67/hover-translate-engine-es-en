@@ -75,16 +75,36 @@ export async function loadEngineLocal(wasmPaths = null, modelPath = null) {
     localModelRoot = `${localModelRoot}/`;
   }
 
+  // Compute WASM base directory for ONNX runtime loader
+  let wasmBaseDir = '';
+  if (typeof finalWasmPaths === 'string') {
+    wasmBaseDir = finalWasmPaths;
+  } else if (finalWasmPaths && typeof finalWasmPaths === 'object') {
+    const mjsPath = finalWasmPaths['ort-wasm-simd-threaded.jsep.mjs'];
+    const wasmPath = finalWasmPaths['ort-wasm-simd-threaded.jsep.wasm'];
+    const pick = mjsPath || wasmPath || '';
+    const lastSlash = Math.max(pick.lastIndexOf('/'), pick.lastIndexOf('\\'));
+    wasmBaseDir = lastSlash > -1 ? pick.slice(0, lastSlash + 1) : pick;
+  }
+
   // Enforce local-only operation and set model root
   try {
     env.allowLocalModels = true;
     env.allowRemoteModels = false;
     env.localModelPath = localModelRoot;
+    // Ensure ONNX runtime WASM loader uses our local paths instead of CDN
+    if (!env.backends) env.backends = {};
+    if (!env.backends.onnx) env.backends.onnx = {};
+    if (!env.backends.onnx.wasm) env.backends.onnx.wasm = {};
+    env.backends.onnx.wasm.wasmPaths = wasmBaseDir || finalWasmPaths;
+    // Avoid Cache API writes for chrome-extension:// scheme
+    env.useBrowserCache = false;
     console.debug('[Engine] Env flags set:', {
       allowLocalModels: env.allowLocalModels,
       allowRemoteModels: env.allowRemoteModels,
       localModelPath: env.localModelPath
     });
+    console.debug('[Engine] ONNX WASM base/path:', env.backends.onnx.wasm.wasmPaths);
   } catch (_) {
     // env may be partially mocked in tests; ignore if not configurable
   }
