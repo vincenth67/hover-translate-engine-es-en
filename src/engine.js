@@ -77,8 +77,14 @@ export async function loadEngineLocal(wasmPaths = null, modelPath = null) {
 
   // Enforce local-only operation and set model root
   try {
+    env.allowLocalModels = true;
     env.allowRemoteModels = false;
     env.localModelPath = localModelRoot;
+    console.debug('[Engine] Env flags set:', {
+      allowLocalModels: env.allowLocalModels,
+      allowRemoteModels: env.allowRemoteModels,
+      localModelPath: env.localModelPath
+    });
   } catch (_) {
     // env may be partially mocked in tests; ignore if not configurable
   }
