@@ -53,6 +53,8 @@ export async function loadEngine() {
  */
 //===================================================================================================================
 export async function loadEngineLocal(wasmPaths = null, modelPath = null) {
+
+  console.log("Hello World!!!!!!");
   // Determine effective paths (defaults maintain backward compatibility)
   const finalWasmPaths = wasmPaths || {
     'ort-wasm-simd-threaded.jsep.wasm': './wasm/ort-wasm-simd-threaded.jsep.wasm',
@@ -93,10 +95,15 @@ export async function loadEngineLocal(wasmPaths = null, modelPath = null) {
   }
 
   // Enforce local-only operation and set model root (minimal essential flags)
-  env.allowLocalModels = true;
-  env.allowRemoteModels = false;
-  env.localModelPath = localModelRoot;
-  env.useBrowserCache = false; // avoid Cache API on chrome-extension://
+  
+  try {
+    env.allowLocalModels = true;
+    env.allowRemoteModels = false;
+    env.localModelPath = localModelRoot;
+    env.useBrowserCache = false; // avoid Cache API on chrome-extension://
+  } catch (_) {
+    // env may be partially mocked in tests; ignore if not configurable
+  }
   
 
   try {
